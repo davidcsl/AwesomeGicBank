@@ -18,6 +18,10 @@ public class InterestRateProcessor {
             "Please enter interest rules details in <Date> <RuleId> <Rate in %%> format \n" +
                     "(or enter blank to go back to main menu):");
 
+    if ("".equalsIgnoreCase(interestRateRequest)) {
+      return;
+    }
+
     String[] payloads = interestRateRequest.split(" ");
 
     try {

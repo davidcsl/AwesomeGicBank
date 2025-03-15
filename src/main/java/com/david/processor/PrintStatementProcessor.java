@@ -19,6 +19,10 @@ public class PrintStatementProcessor {
             "Please enter account and month to generate the statement <Account> <Year><Month> \n" +
                     "(or enter blank to go back to main menu):");
 
+    if ("".equalsIgnoreCase(printStatementRequest)) {
+      return;
+    }
+
     String[] payloads = printStatementRequest.split(" ");
 
     try {
