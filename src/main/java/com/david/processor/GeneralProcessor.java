@@ -27,7 +27,7 @@ public class GeneralProcessor {
                                       Vector<TransactionDetail> transactionHistory,
                                       Vector<InterestRateDetail> interestRateHistory) {
     if ("T".equalsIgnoreCase(action)) {
-      TransactionProcessor.inputTransaction(transactionHistory);
+      TransactionProcessor.inputTransaction(transactionHistory, interestRateHistory);
       return true;
 
     } else if ("I".equalsIgnoreCase(action)) {
