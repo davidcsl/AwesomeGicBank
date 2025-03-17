@@ -57,7 +57,7 @@ public class InterestRateProcessor {
       System.out.println("\nInterest rules:");
       System.out.printf("| %-10s | %-10s | %10s |%n", "Date", "RuleId", "Rate (%)");
       interestRateHistory.forEach(
-              a -> System.out.printf("| %-10s | %-10s | %10s |%n", a.getRate(), a.getRuleId(), a.getRate()));
+              a -> System.out.printf("| %-10s | %-10s | %10s |%n", a.getDate(), a.getRuleId(), a.getRate()));
       System.out.println("\nIs there anything else you'd like to do?");
 
     } catch (DateTimeParseException e){
