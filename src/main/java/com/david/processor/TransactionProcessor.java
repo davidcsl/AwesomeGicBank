@@ -101,20 +101,18 @@ public class TransactionProcessor {
       transactionDetail.setAmount(amount.toString());
       transactionDetail.setBalance(newBalance.toString());
       transactionHistory.add(transactionDetail);
-      System.out.println("Account: " + accountId);
-      System.out.println("| Date     | Txn Id      | Type | Amount |");
 
+      System.out.println("\nAccount: " + accountId);
+      System.out.printf("| %-10s | %-12s | %-10s | %10s | %n", "Date", "Txn Id", "Type", "Amount");
       transactionHistory.forEach(
-              a -> System.out.println("| " + a.getDate()
-                      + " | " + a.getTransactionId() + " | " + a.getType()
-                      + "    | " + a.getAmount() + "   |"));
+              a -> System.out.printf("| %-10s | %-12s | %-10s | %10s | %n",
+                      a.getDate(), a.getTransactionId(), a.getType(), a.getAmount()));
 
-      System.out.println("Is there anything else you'd like to do?");
+      System.out.println("\nIs there anything else you'd like to do?");
     } catch (DateTimeParseException e) {
       System.out.println("Invalid transaction payload found: Invalid date format input. " + e.getMessage());
     } catch (Exception e) {
-      System.out.println("Invalid transaction payload: " + e.getStackTrace().toString());
-      e.printStackTrace();
+      System.out.println("Invalid transaction payload: " + e.getMessage());
     }
 
   }
@@ -136,7 +134,7 @@ public class TransactionProcessor {
             .toList();
 
     InterestRateDto interestRateDto = new InterestRateDto();
-    interestRateDto.setCurrentInterestRate(1D);
+    interestRateDto.setCurrentInterestRate(0D);
 
     if (interestRateHistory.size() > 0)  {
       String extractedInitialRate = interestRateHistory
@@ -187,10 +185,6 @@ public class TransactionProcessor {
     double calculatedAnnualizedInterest = Math.round(interestRateDto.getAnnualizedInterest() / 365 * 100.0) / 100.0;
     double newBalance = Double.parseDouble(lastTransaction.getBalance()) + calculatedAnnualizedInterest;
 
-    System.out.println(
-            "Month " + interestCalcYearMonth.substring(4)
-                    + " interest rate is: " + calculatedAnnualizedInterest);
-
     TransactionDetail interestTransactionDetail = new TransactionDetail();
     interestTransactionDetail.setAccountId(lastTransaction.getAccountId());
     interestTransactionDetail.setDate(lastTransaction.getDate().substring(0, 6) + lastDayOfTheMonth);
@@ -224,8 +218,6 @@ public class TransactionProcessor {
 
         interestRateDto.setDateFrom(interestRateDay);
         interestRateDto.setCurrentInterestRate(nextInterestRate);
-        System.out.println("HERE date from is: " + interestRateDto.getDateFrom()
-                + " and currentInterestRate is: " + interestRateDto.getCurrentInterestRate());
       }
     }
 

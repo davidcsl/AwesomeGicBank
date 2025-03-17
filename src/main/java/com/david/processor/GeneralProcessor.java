@@ -49,6 +49,7 @@ public class GeneralProcessor {
   }
 
   public static void quit() {
-    System.out.println("Thank you for banking with AwesomeGIC Bank. \nHave a nice day!");
+    System.out.println("Thank you for banking with AwesomeGIC Bank. " +
+            "\nHave a nice day!");
   }
 }

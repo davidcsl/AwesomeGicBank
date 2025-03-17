@@ -54,9 +54,11 @@ public class InterestRateProcessor {
         interestRateHistory.add(newInterestRateDetails);
       }
 
-      System.out.println("Interest rules:");
-      System.out.println(interestRateHistory);
-      System.out.println("Is there anything else you'd like to do?");
+      System.out.println("\nInterest rules:");
+      System.out.printf("| %-10s | %-10s | %10s |%n", "Date", "RuleId", "Rate (%)");
+      interestRateHistory.forEach(
+              a -> System.out.printf("| %-10s | %-10s | %10s |%n", a.getRate(), a.getRuleId(), a.getRate()));
+      System.out.println("\nIs there anything else you'd like to do?");
 
     } catch (DateTimeParseException e){
       System.out.println("Invalid interest rate payload found: Invalid date format input. " + e.getMessage());
@@ -68,7 +70,7 @@ public class InterestRateProcessor {
 
   private static void interestRatePayloadValidation(String[] payloads) throws Exception {
     if (payloads.length != 3) {
-      throw new Exception("Invalid payload or one of the info is missing: <Date> <RuleId> <Rate in %>");
+      throw new Exception("Invalid payload or one of the info is missing: <Date> <RuleId> <Rate in %%>");
     }
 
     LocalDate date = LocalDate.parse(payloads[0], DateTimeFormatter.BASIC_ISO_DATE);

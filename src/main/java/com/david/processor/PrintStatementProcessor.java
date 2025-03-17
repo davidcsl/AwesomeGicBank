@@ -38,18 +38,17 @@ public class PrintStatementProcessor {
                 .toList();
       }
       if (!transactionDetailList.isEmpty()) {
-        System.out.println("Account: " + transactionDetailList.get(0).getAccountId());
-        System.out.println("| Date     | Txn Id      | Type | Amount | Balance |");
+        System.out.println("\nAccount: " + transactionDetailList.get(0).getAccountId());
+        System.out.printf("| %-10s | %-12s | %-10s | %10s | %10s | %n", "Date", "Txn Id", "Type", "Amount", "Balance");
 
         transactionDetailList.forEach(
-                a -> System.out.println("| " + a.getDate()
-                        + " | " + a.getTransactionId() + " | " + a.getType()
-                        + "    | " + a.getAmount() + "   | " + a.getBalance() + "    |"));
+                a -> System.out.printf("| %-10s | %-12s | %-10s | %10s | %10s | %n",
+                        a.getDate(), a.getTransactionId(), a.getType(), a.getAmount(), a.getBalance()));
 
       } else {
         System.out.println("There is no transactions");
       }
-      System.out.println("Is there anything else you'd like to do?");
+      System.out.println("\nIs there anything else you'd like to do?");
 
     } catch (DateTimeParseException e) {
       System.out.println("Invalid Print Statement payload found: Invalid date format input. " + e.getMessage());
