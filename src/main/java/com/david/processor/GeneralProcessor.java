@@ -3,23 +3,18 @@ package com.david.processor;
 import com.david.model.InterestRateDetail;
 import com.david.model.TransactionDetail;
 
-import java.io.Console;
+import java.util.Scanner;
 import java.util.Vector;
 
 public class GeneralProcessor {
 
   public static String displayActions() {
-    Console console = System.console();
-    if (console == null) {
-      System.out.println("Console is null");
-      return "console is null";
-    }
-
-    String action = console.readLine(
-            "[T] Input transactions \n" +
-                    "[I] Define interest rules \n" +
-                    "[P] Print statement \n" +
-                    "[Q] Quit\n");
+    Scanner scanner = new Scanner(System.in);
+    System.out.println("[T] Input transactions \n" +
+            "[I] Define interest rules \n" +
+            "[P] Print statement \n" +
+            "[Q] Quit\n");
+    String action = scanner.nextLine();
     return action;
   }
 

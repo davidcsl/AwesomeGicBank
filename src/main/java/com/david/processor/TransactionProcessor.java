@@ -4,22 +4,22 @@ import com.david.model.InterestRateDetail;
 import com.david.model.InterestRateDto;
 import com.david.model.TransactionDetail;
 
-import java.io.Console;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.Vector;
 
 public class TransactionProcessor {
   public static void inputTransaction(Vector<TransactionDetail> transactionHistory,
                                       Vector<InterestRateDetail> interestRateHistory) {
-    Console console = System.console();
-    String transactionRequest = console.readLine(
-            "Please enter transaction details in <Date> <Account> <Type> <Amount> format \n" +
-                    "(or enter blank to go back to main menu):");
+    Scanner scanner = new Scanner(System.in);
+    System.out.println("Please enter transaction details in <Date> <Account> <Type> <Amount> format \n" +
+            "(or enter blank to go back to main menu):");
+    String transactionRequest = scanner.nextLine();
 
     if (transactionRequest.isBlank()) {
       return;

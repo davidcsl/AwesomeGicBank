@@ -2,21 +2,21 @@ package com.david.processor;
 
 import com.david.model.InterestRateDetail;
 
-import java.io.Console;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.Vector;
 
 public class InterestRateProcessor {
 
   public static void defineInterestRule(Vector<InterestRateDetail> interestRateHistory) {
 
-    Console console = System.console();
-    String interestRateRequest = console.readLine(
-            "Please enter interest rules details in <Date> <RuleId> <Rate in %%> format \n" +
-                    "(or enter blank to go back to main menu):");
+    Scanner scanner = new Scanner(System.in);
+    System.out.println("Please enter interest rules details in <Date> <RuleId> <Rate in %%> format \n" +
+            "(or enter blank to go back to main menu):");
+    String interestRateRequest = scanner.nextLine();
 
     if (interestRateRequest.isBlank()) {
       return;

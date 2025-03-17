@@ -2,22 +2,19 @@ package com.david.processor;
 
 import com.david.model.TransactionDetail;
 
-import java.io.Console;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Vector;
+import java.util.*;
 
 public class PrintStatementProcessor {
 
   public static void printStatement(Vector<TransactionDetail> transactionHistory) {
-    Console console = System.console();
-    String printStatementRequest = console.readLine(
-            "Please enter account and month to generate the statement <Account> <Year><Month> \n" +
-                    "(or enter blank to go back to main menu):");
+
+    Scanner scanner = new Scanner(System.in);
+    System.out.println("Please enter account and month to generate the statement <Account> <Year><Month> \n" +
+            "(or enter blank to go back to main menu):");
+    String printStatementRequest = scanner.nextLine();
 
     if (printStatementRequest.isBlank()) {
       return;
