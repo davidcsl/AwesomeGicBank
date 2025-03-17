@@ -1,7 +1,0 @@
-com\david\processor\GeneralProcessor.class
-com\david\processor\PrintStatementProcessor.class
-com\david\processor\InterestRateProcessor.class
-com\david\model\TransactionDetail.class
-com\david\model\InterestRateDetail.class
-com\david\Main.class
-com\david\processor\TransactionProcessor.class

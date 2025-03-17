@@ -128,7 +128,8 @@ public class TransactionProcessor {
                                      Integer monthDifference,
                                      Vector<InterestRateDetail> interestRateHistory) {
 
-    String interestCalcYearMonth = transactionHistory.lastElement().getDate().substring(0, 6);
+    TransactionDetail lastTransaction = transactionHistory.lastElement();
+    String interestCalcYearMonth = lastTransaction.getDate().substring(0, 6);
 
     List<TransactionDetail> interestMonthTransaction = transactionHistory
             .stream()
@@ -200,31 +201,41 @@ public class TransactionProcessor {
     YearMonth yearMonth = YearMonth
             .of(Integer.parseInt(interestCalcYearMonth.substring(0, 4)),
                     Integer.parseInt(interestCalcYearMonth.substring(4)));
-    int monthLength = yearMonth.lengthOfMonth();
-    Double monthLastBalance = Double.parseDouble(transactionHistory.lastElement().getBalance());
+    int lastDayofTheMonth = yearMonth.lengthOfMonth();
+    Double monthLastBalance = Double.parseDouble(lastTransaction.getBalance());
 
     int finalDateFrom2 = dateFrom;
     List<InterestRateDetail> interestMonthInterestPortion2 = interestMonthInterest
             .stream().filter(a -> Integer.parseInt(a.getDate().substring(6)) >= finalDateFrom2
-                    && Integer.parseInt(a.getDate().substring(6)) <= monthLength)
+                    && Integer.parseInt(a.getDate().substring(6)) <= lastDayofTheMonth)
             .toList();
 
     for (int k = 0; k < interestMonthInterestPortion2.size(); k++) {
       int interestRateDay = Integer.parseInt(interestMonthInterestPortion2.get(k).getDate().substring(6));
       double nextInterestRate = Double.parseDouble(interestMonthInterestPortion2.get(k).getRate());
 
-      if (interestRateDay >= dateFrom && interestRateDay <= monthLength) {
+      if (interestRateDay >= dateFrom && interestRateDay <= lastDayofTheMonth) {
         annualizedInterest += monthLastBalance * currentInterestRate / 100 * (interestRateDay - dateFrom);
         dateFrom = interestRateDay;
         currentInterestRate = nextInterestRate;
         System.out.println("HERE date from is: " + dateFrom + " and currentInterestRate is: " + currentInterestRate);
       }
     }
-    annualizedInterest += monthLastBalance * currentInterestRate / 100 * (monthLength - dateFrom + 1);
+    annualizedInterest += monthLastBalance * currentInterestRate / 100 * (lastDayofTheMonth - dateFrom + 1);
 
+    annualizedInterest = Math.round(annualizedInterest / 365 * 100.0) / 100.0;
+    double newBalance = Double.parseDouble(lastTransaction.getBalance()) + annualizedInterest;
 
     System.out.println(
             "Month " + interestCalcYearMonth.substring(4) + " interest rate is: " + annualizedInterest);
+    TransactionDetail interestTransactionDetail = new TransactionDetail();
+    interestTransactionDetail.setAccountId(lastTransaction.getAccountId());
+    interestTransactionDetail.setDate(lastTransaction.getDate().substring(0, 6) + lastDayofTheMonth);
+    interestTransactionDetail.setAmount(String.valueOf(annualizedInterest));
+    interestTransactionDetail.setType("I");
+    interestTransactionDetail.setBalance(String.valueOf(newBalance));
+    interestTransactionDetail.setTransactionId("");
+    transactionHistory.add(interestTransactionDetail);
 
   }
 
