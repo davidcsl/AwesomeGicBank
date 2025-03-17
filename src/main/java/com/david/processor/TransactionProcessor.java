@@ -34,6 +34,15 @@ public class TransactionProcessor {
       String type = payloads[2];
       Double amount = Double.parseDouble(payloads[3]);
 
+      if (transactionHistory.size() > 0 && !"I".equalsIgnoreCase(transactionHistory.lastElement().getType())) {
+        Integer monthDifference =
+                Integer.parseInt(transactionDate.substring(0, 6))
+                        - Integer.parseInt(transactionHistory.lastElement().getDate().substring(0, 6));
+        if (monthDifference > 0) {
+          interestPayout(transactionHistory, monthDifference, interestRateHistory);
+        }
+      }
+
       TransactionDetail previousTxn = null;
       Double lastBalance = 0D;
       String lastSameDayTxnId = null;
@@ -54,7 +63,6 @@ public class TransactionProcessor {
           lastSameDayTxnId = previousTxn.getTransactionId();
         }
       }
-
 
       String newTxnId;
       StringBuilder stringBuilder = new StringBuilder();
@@ -86,7 +94,6 @@ public class TransactionProcessor {
       if (Objects.isNull(newBalance)) {
         throw new Exception("Invalid transaction operation as new balance is invalid / null.");
       }
-
       TransactionDetail transactionDetail = new TransactionDetail();
       transactionDetail.setAccountId(accountId);
       transactionDetail.setDate(transactionDate);
@@ -94,19 +101,8 @@ public class TransactionProcessor {
       transactionDetail.setType(type);
       transactionDetail.setAmount(amount.toString());
       transactionDetail.setBalance(newBalance.toString());
-
-
-      if (transactionHistory.size() > 0) {
-        Integer monthDifference =
-                Integer.parseInt(transactionDate.substring(0, 6))
-                        - Integer.parseInt(previousTxn.getDate().substring(0, 6));
-        if (monthDifference > 0) {
-          interestPayout(transactionHistory, monthDifference, interestRateHistory);
-        }
-      }
       transactionHistory.add(transactionDetail);
       System.out.println("Account: " + accountId);
-
       System.out.println("| Date     | Txn Id      | Type | Amount |");
 
       transactionHistory.forEach(
