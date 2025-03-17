@@ -30,27 +30,24 @@ public class InterestRateProcessor {
       String ruleId = payloads[1];
       String interestRate = payloads[2];
 
-      InterestRateDetail lastInterestRateDetails = null;
+      InterestRateDetail lastInterestRateDetails;
       InterestRateDetail newInterestRateDetails = new InterestRateDetail();
+      newInterestRateDetails.setDate(newInterestDate);
+      newInterestRateDetails.setRuleId(ruleId);
+      newInterestRateDetails.setRate(interestRate);
+
       if (interestRateHistory.size() > 0) {
         lastInterestRateDetails = interestRateHistory.lastElement();
         if (Integer.parseInt(newInterestDate) < Integer.parseInt(lastInterestRateDetails.getDate())) {
           throw new Exception("Interest rate input date is earlier than previous rate date.");
-        } else if (Integer.parseInt(newInterestDate) == Integer.parseInt(lastInterestRateDetails.getDate())) {
-          newInterestRateDetails.setDate(newInterestDate);
-          newInterestRateDetails.setRuleId(ruleId);
-          newInterestRateDetails.setRate(interestRate);
+        }
+        if (Integer.parseInt(newInterestDate) == Integer.parseInt(lastInterestRateDetails.getDate())) {
           interestRateHistory.set(interestRateHistory.size() - 1, newInterestRateDetails);
         } else {
-          newInterestRateDetails.setDate(newInterestDate);
-          newInterestRateDetails.setRuleId(ruleId);
-          newInterestRateDetails.setRate(interestRate);
           interestRateHistory.add(newInterestRateDetails);
         }
+
       } else {
-        newInterestRateDetails.setDate(newInterestDate);
-        newInterestRateDetails.setRuleId(ruleId);
-        newInterestRateDetails.setRate(interestRate);
         interestRateHistory.add(newInterestRateDetails);
       }
 
