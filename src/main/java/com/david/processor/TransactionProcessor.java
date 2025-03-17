@@ -21,7 +21,7 @@ public class TransactionProcessor {
             "Please enter transaction details in <Date> <Account> <Type> <Amount> format \n" +
                     "(or enter blank to go back to main menu):");
 
-    if ("".equalsIgnoreCase(transactionRequest)) {
+    if (transactionRequest.isBlank()) {
       return;
     }
     String[] payloads = transactionRequest.split(" ");
