@@ -1,12 +1,11 @@
 package com.david.processor;
 
 import com.david.model.InterestRateDetail;
+import com.david.model.InterestRateDto;
 import com.david.model.TransactionDetail;
 
 import java.io.Console;
-import java.sql.SQLOutput;
 import java.time.LocalDate;
-import java.time.Year;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -136,7 +135,9 @@ public class TransactionProcessor {
             .filter(a -> interestCalcYearMonth.equalsIgnoreCase(a.getDate().substring(0, 6)))
             .toList();
 
-    Double currentInterestRate = 1D;
+    InterestRateDto interestRateDto = new InterestRateDto();
+    interestRateDto.setCurrentInterestRate(1D);
+
     if (interestRateHistory.size() > 0)  {
       String extractedInitialRate = interestRateHistory
               .stream()
@@ -146,12 +147,12 @@ public class TransactionProcessor {
               .findFirst()
               .orElse(null);
       if (Objects.nonNull(extractedInitialRate)) {
-        currentInterestRate = Double.parseDouble(extractedInitialRate);
+        interestRateDto.setCurrentInterestRate(Double.parseDouble(extractedInitialRate));
       }
     }
 
-    double annualizedInterest = 0D;
-    Integer dateFrom = 1;
+    interestRateDto.setAnnualizedInterest(0D);
+    interestRateDto.setDateFrom(1);
     for (int i = 0; i < interestMonthTransaction.size(); i++) {
 
       if (i + 1 < interestMonthTransaction.size() &&
@@ -172,62 +173,28 @@ public class TransactionProcessor {
 
       if (Objects.nonNull(eodBalancePrior)) {
         int dateTo = Integer.parseInt(transactionDetail.getDate().substring(6));
-        int finalDateFrom = dateFrom;
-        List<InterestRateDetail> interestMonthInterestPortion = interestMonthInterest
-                .stream().filter(a -> Integer.parseInt(a.getDate().substring(6)) >= finalDateFrom
-                        && Integer.parseInt(a.getDate().substring(6)) <= dateTo)
-                .toList();
-
-        for (int j = 0; j < interestMonthInterestPortion.size(); j++) {
-          int interestRateDay = Integer.parseInt(interestMonthInterestPortion.get(j).getDate().substring(6));
-          double nextInterestRate = Double.parseDouble(interestMonthInterestPortion.get(j).getRate());
-
-          if (interestRateDay >= dateFrom && interestRateDay <= dateTo) {
-            annualizedInterest += eodBalancePrior * currentInterestRate / 100 * (interestRateDay - dateFrom);
-            dateFrom = interestRateDay;
-            currentInterestRate = nextInterestRate;
-            System.out.println("HERE date from is: " + dateFrom + " and currentInterestRate is: " + currentInterestRate);
-          }
-        }
-        annualizedInterest += eodBalancePrior * currentInterestRate / 100 * (dateTo - dateFrom);
-        dateFrom = dateTo;
+        calculateInterestPayout(interestMonthInterest, interestRateDto, dateTo, eodBalancePrior);
       }
     }
 
     YearMonth yearMonth = YearMonth
             .of(Integer.parseInt(interestCalcYearMonth.substring(0, 4)),
                     Integer.parseInt(interestCalcYearMonth.substring(4)));
-    int lastDayofTheMonth = yearMonth.lengthOfMonth();
+    int lastDayOfTheMonth = yearMonth.lengthOfMonth();
     Double monthLastBalance = Double.parseDouble(lastTransaction.getBalance());
+    calculateInterestPayout(interestMonthInterest, interestRateDto, lastDayOfTheMonth, monthLastBalance);
 
-    int finalDateFrom2 = dateFrom;
-    List<InterestRateDetail> interestMonthInterestPortion2 = interestMonthInterest
-            .stream().filter(a -> Integer.parseInt(a.getDate().substring(6)) >= finalDateFrom2
-                    && Integer.parseInt(a.getDate().substring(6)) <= lastDayofTheMonth)
-            .toList();
-
-    for (int k = 0; k < interestMonthInterestPortion2.size(); k++) {
-      int interestRateDay = Integer.parseInt(interestMonthInterestPortion2.get(k).getDate().substring(6));
-      double nextInterestRate = Double.parseDouble(interestMonthInterestPortion2.get(k).getRate());
-
-      if (interestRateDay >= dateFrom && interestRateDay <= lastDayofTheMonth) {
-        annualizedInterest += monthLastBalance * currentInterestRate / 100 * (interestRateDay - dateFrom);
-        dateFrom = interestRateDay;
-        currentInterestRate = nextInterestRate;
-        System.out.println("HERE date from is: " + dateFrom + " and currentInterestRate is: " + currentInterestRate);
-      }
-    }
-    annualizedInterest += monthLastBalance * currentInterestRate / 100 * (lastDayofTheMonth - dateFrom + 1);
-
-    annualizedInterest = Math.round(annualizedInterest / 365 * 100.0) / 100.0;
-    double newBalance = Double.parseDouble(lastTransaction.getBalance()) + annualizedInterest;
+    double calculatedAnnualizedInterest = Math.round(interestRateDto.getAnnualizedInterest() / 365 * 100.0) / 100.0;
+    double newBalance = Double.parseDouble(lastTransaction.getBalance()) + calculatedAnnualizedInterest;
 
     System.out.println(
-            "Month " + interestCalcYearMonth.substring(4) + " interest rate is: " + annualizedInterest);
+            "Month " + interestCalcYearMonth.substring(4)
+                    + " interest rate is: " + calculatedAnnualizedInterest);
+
     TransactionDetail interestTransactionDetail = new TransactionDetail();
     interestTransactionDetail.setAccountId(lastTransaction.getAccountId());
-    interestTransactionDetail.setDate(lastTransaction.getDate().substring(0, 6) + lastDayofTheMonth);
-    interestTransactionDetail.setAmount(String.valueOf(annualizedInterest));
+    interestTransactionDetail.setDate(lastTransaction.getDate().substring(0, 6) + lastDayOfTheMonth);
+    interestTransactionDetail.setAmount(String.valueOf(calculatedAnnualizedInterest));
     interestTransactionDetail.setType("I");
     interestTransactionDetail.setBalance(String.valueOf(newBalance));
     interestTransactionDetail.setTransactionId("");
@@ -235,35 +202,37 @@ public class TransactionProcessor {
 
   }
 
-  private static double calculateAnnualizedInterest(TransactionDetail transactionDetail,
-                                                    List<InterestRateDetail> interestMonthInterest,
-                                                    Double eodBalancePrior,
-                                                    Integer dateFrom,
-                                                    Double currentInterestRate) {
-    double annualizedInterest = 0D;
-    int dateTo = Integer.parseInt(transactionDetail.getDate().substring(6));
+  private static void calculateInterestPayout(List<InterestRateDetail> interestMonthInterest,
+                                              InterestRateDto interestRateDto,
+                                              Integer dateTo,
+                                              Double eodBalancePrior) {
 
-    int finalDateFrom = dateFrom;
+    int finalDateFrom = interestRateDto.getDateFrom();
     List<InterestRateDetail> interestMonthInterestPortion = interestMonthInterest
             .stream().filter(a -> Integer.parseInt(a.getDate().substring(6)) >= finalDateFrom
                     && Integer.parseInt(a.getDate().substring(6)) <= dateTo)
             .toList();
-    System.out.println("HERE interestMonthInterestPortion is :" + interestMonthInterestPortion);
 
-    for (int i = 0; i < interestMonthInterestPortion.size(); i++) {
-      int interestRateDay = Integer.parseInt(interestMonthInterestPortion.get(i).getDate().substring(6));
-      double nextInterestRate = Integer.parseInt(interestMonthInterestPortion.get(i).getRate());
+    for (int j = 0; j < interestMonthInterestPortion.size(); j++) {
+      int interestRateDay = Integer.parseInt(interestMonthInterestPortion.get(j).getDate().substring(6));
+      double nextInterestRate = Double.parseDouble(interestMonthInterestPortion.get(j).getRate());
 
-      if (interestRateDay >= dateFrom && interestRateDay <= dateTo) {
-        annualizedInterest += eodBalancePrior * currentInterestRate / 100 * (interestRateDay - dateFrom);
-        dateFrom = interestRateDay;
-        currentInterestRate = nextInterestRate;
-        System.out.println("HERE date from is: " + dateFrom + " and currentInterestRate is: " + currentInterestRate);
+      if (interestRateDay >= interestRateDto.getDateFrom() && interestRateDay <= dateTo) {
+        double newAnnualizedInterest = eodBalancePrior * interestRateDto.getCurrentInterestRate()
+                / 100 * (interestRateDay - interestRateDto.getDateFrom());
+        interestRateDto.setAnnualizedInterest(interestRateDto.getAnnualizedInterest() + newAnnualizedInterest);
+
+        interestRateDto.setDateFrom(interestRateDay);
+        interestRateDto.setCurrentInterestRate(nextInterestRate);
+        System.out.println("HERE date from is: " + interestRateDto.getDateFrom()
+                + " and currentInterestRate is: " + interestRateDto.getCurrentInterestRate());
       }
     }
-    annualizedInterest += eodBalancePrior * currentInterestRate / 100 * (dateTo - dateFrom + 1);
-    dateFrom = dateTo + 1;
-    return annualizedInterest;
+
+    double newAnnualizedInterest = eodBalancePrior * interestRateDto.getCurrentInterestRate()
+            / 100 * (dateTo - interestRateDto.getDateFrom());
+    interestRateDto.setAnnualizedInterest(interestRateDto.getAnnualizedInterest() + newAnnualizedInterest);
+    interestRateDto.setDateFrom(dateTo);
   }
 
   public static void transactionPayloadValidation(String[] payloads) throws Exception {
